@@ -3,7 +3,7 @@ import cors from "cors";
 import mongoose from 'mongoose';
 import path from 'path';
 import productsRouter from '../routes/product';
-import orderRouter from '../routes/product';
+import orderRouter from '../routes/order';
 
 const app = express();
 
