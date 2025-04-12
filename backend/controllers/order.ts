@@ -1,9 +1,11 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { faker } from "@faker-js/faker";
 import Joi from "joi";
-import { Types } from "mongoose";
+import { Types, Error as MongooseError } from "mongoose";
 import Product from "../models/product";
 import { ObjectId } from "bson";
+import BadRequestError from "../errors/bad-request-error";
+import NotFoundError from "../errors/not-found-error";
 
 export enum PaymentType {
   Card = "card",
@@ -42,40 +44,38 @@ const orderSchema = Joi.object({
     .messages({ "array.min": "Заказ должен содержать хотя бы один товар" }),
 });
 
-function validateOrder(order: IOrder) {
-  const { error, value } = orderSchema.validate(order, {
-    abortEarly: false,
-  });
-  if (error) {
-    throw new Error(`Validation error: ${error.message}`);
-  }
-  return value;
-}
+export const createOrder = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { error, value } = orderSchema.validate(req.body);
 
-export const createOrder = (req: Request, res: Response) => {
-  const validatedOrder = validateOrder(req.body);
-  const uniqueValidatedOrder = Array.from(new Set(validatedOrder.items));
+  if (error) {
+    return next(
+      new BadRequestError(
+        "Ошибка валидации данных при оформлении заказа" + " " + error.message
+      )
+    );
+  }
+
+  const uniqueValidatedOrder = Array.from(new Set(value.items));
 
   Product.find({
     _id: {
-      $in: validatedOrder.items.filter((id: ObjectId) =>
-        Types.ObjectId.isValid(id)
-      ),
+      $in: value.items.filter((id: ObjectId) => Types.ObjectId.isValid(id)),
     },
     price: { $ne: null },
   })
     .then((products) => {
       if (products.length !== uniqueValidatedOrder.length) {
-        const missingIds = validatedOrder.items.filter(
+        const missingIds = value.items.filter(
           (id: ObjectId) => !products.some((product) => product._id.equals(id))
         );
-        return res.status(400).json({
-          error: "Товары не найдены:",
-          unavailableItems: missingIds,
-        });
+        return next(new NotFoundError(`Товар(ы) ${missingIds} не найдены`));
       }
 
-      const itemCounts = validatedOrder.items.reduce((acc: any, id: string) => {
+      const itemCounts = value.items.reduce((acc: any, id: string) => {
         if (Types.ObjectId.isValid(id)) {
           acc[id] = (acc[id] || 0) + 1;
         }
@@ -88,10 +88,12 @@ export const createOrder = (req: Request, res: Response) => {
         totalSum += product.price * count;
       });
 
-      if (totalSum !== validatedOrder.total) {
-        return res.status(400).json({
-          error: "Сумма не совпадает",
-        });
+      if (totalSum !== value.total) {
+        return next(
+          new BadRequestError(
+            "Сумма не совпадает" + " " + totalSum + " " + value.total
+          )
+        );
       }
 
       res.status(200).json({
@@ -105,10 +107,6 @@ export const createOrder = (req: Request, res: Response) => {
     })
     .catch((err) => {
       console.error("Ошибка БД:", err);
-      res.status(500).json({
-        error: "Server error",
-        details:
-          process.env.NODE_ENV === "development" ? err.message : undefined,
-      });
+      return next(err);
     });
 };
