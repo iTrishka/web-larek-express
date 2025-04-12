@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { getProducts, createProduct } from "../controllers/products";
-import {
-  getProductValidation,
-  createProductValidation,
-} from "../middleware/validation";
+import { createProductValidation } from "../middleware/validation";
 
 const router = Router();
 
@@ -11,6 +8,6 @@ const router = Router();
 router.get("/", getProducts);
 
 // Роут POST /product
-router.post("/", createProduct);
+router.post("/", createProductValidation, createProduct);
 
 export default router;
