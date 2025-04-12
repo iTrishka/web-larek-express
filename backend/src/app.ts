@@ -7,6 +7,7 @@ import productsRouter from "../routes/product";
 import orderRouter from "../routes/order";
 import errorHandler from "../middleware/error-handler";
 import NotFoundError from "../errors/not-found-error";
+import { errorLogger, requestLogger } from "../middleware/logger";
 
 const app = express();
 
@@ -17,8 +18,12 @@ app.use(express.static(path.join(__dirname, "public")));
 
 mongoose.connect("mongodb://127.0.0.1:27017/weblarek");
 
+app.use(requestLogger);
+
 app.use("/product", productsRouter);
 app.use("/order", orderRouter);
+
+app.use(errorLogger);
 
 app.use(celebrateErrors());
 
