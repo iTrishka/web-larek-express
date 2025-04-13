@@ -32,7 +32,7 @@ export const createProduct = (
 
   return Product.create(productData)
     .then((product) => {
-      res.status(200).send({ data: product });
+      res.status(201).send({ data: product });
     })
     .catch((error) => {
       if (error instanceof Error && error.message.includes('E11000')) {
