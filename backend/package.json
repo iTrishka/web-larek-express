@@ -13,7 +13,6 @@
   "author": "< Укажите здесь автора работы >",
   "license": "ISC",
   "devDependencies": {
-    "@faker-js/faker": "^9.6.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.12.7",
@@ -28,12 +27,15 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.6.0",
+    "bson": "^6.10.3",
     "celebrate": "^15.0.3",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-winston": "^4.2.0",
     "joi": "^17.13.3",
     "mongoose": "^8.3.2",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "winston": "^3.17.0"
   }
 }

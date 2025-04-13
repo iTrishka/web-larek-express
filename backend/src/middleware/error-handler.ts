@@ -1,17 +1,17 @@
-import { Request, Response, NextFunction } from "express";
-import BadRequestError from "../errors/bad-request-error";
-import ConflictError from "../errors/conflict-error";
-import NotFoundError from "../errors/not-found-error";
+import { Request, Response, NextFunction } from 'express';
+import BadRequestError from '../errors/bad-request-error';
+import ConflictError from '../errors/conflict-error';
+import NotFoundError from '../errors/not-found-error';
 
 const errorHandler = (
   err: Error,
-  req: Request,
+  req: Request, // eslint-disable-line
   res: Response,
-  next: NextFunction
+  next: NextFunction // eslint-disable-line
 ) => {
-  if ("validation" in err) {
+  if ('validation' in err) {
     return res.status(400).json({
-      error: "Ошибка валидации данных при создании товара",
+      error: 'Ошибка валидации данных при создании товара',
       details: err.message,
     });
   }
@@ -27,7 +27,7 @@ const errorHandler = (
     return res.status(err.statusCode).json({ error: err.message });
   }
 
-  res.status(500).json({ error: "Internal Server Error *пупупуууу*" });
+  return res.status(500).json({ error: 'Internal Server Error *пупупуууу*' });
 };
 
 export default errorHandler;

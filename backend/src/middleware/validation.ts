@@ -1,97 +1,97 @@
-import { NextFunction, Request, Response } from "express";
-import { Joi } from "celebrate";
-import { ObjectId } from "bson";
-import { Types } from "mongoose";
-import Product from "../models/product";
-import BadRequestError from "../errors/bad-request-error";
-import NotFoundError from "../errors/not-found-error";
+import { NextFunction, Request, Response } from 'express';
+import { Joi } from 'celebrate';
+import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
+import Product from '../models/product';
+import BadRequestError from '../errors/bad-request-error';
+import NotFoundError from '../errors/not-found-error';
 
 const productSchema = Joi.object({
-  title: Joi.string().min(2).max(30).required().messages({
-    "string.min": "Название должно быть не короче {#limit} символов",
-    "string.max": "Название должно быть не длиннее {#limit} символов",
-    "any.required": "Название обязательно",
-    "any.notUnique": 'Продукт с названием "{#value}" уже существует',
-  }),
+  title: Joi.string().min(2).max(30).required()
+    .messages({
+      'string.min': 'Название должно быть не короче {#limit} символов',
+      'string.max': 'Название должно быть не длиннее {#limit} символов',
+      'any.required': 'Название обязательно',
+      'any.notUnique': 'Продукт с названием "{#value}" уже существует',
+    }),
   image: Joi.object({
     fileName: Joi.string().required().messages({
-      "any.required": "Имя файла обязательно",
+      'any.required': 'Имя файла обязательно',
     }),
     originalName: Joi.string().required().messages({
-      "any.required": "Оригинальное имя файла обязательно",
+      'any.required': 'Оригинальное имя файла обязательно',
     }),
   }).required(),
   category: Joi.string().required().messages({
-    "any.required": "Категория обязательна",
+    'any.required': 'Категория обязательна',
   }),
-  description: Joi.string().allow(""),
+  description: Joi.string().allow(''),
   price: Joi.number().allow(null),
 });
 
 export const createProductValidation = (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response, // eslint-disable-line
+  next: NextFunction,
 ) => {
   const { error } = productSchema.validate(req.body, { abortEarly: false });
   if (error) {
     return next(
       new BadRequestError(
-        "Ошибка валидации данных при оформлении заказа" + " " + error.message
-      )
+        `Ошибка валидации данных при оформлении заказа ${error.message}`,
+      ),
     );
   }
 
-  next();
+  return next();
 };
 
 const orderSchema = Joi.object({
   payment: Joi.string()
-    .valid("card", "online")
+    .valid('card', 'online')
     .required()
-    .messages({ "string.empty": "Выберете способ оплаты" }),
+    .messages({ 'string.empty': 'Выберете способ оплаты' }),
   email: Joi.string()
     .email()
     .required()
-    .messages({ "string.empty": "Поле Email обязательно для заполнения" }),
+    .messages({ 'string.empty': 'Поле Email обязательно для заполнения' }),
   phone: Joi.string()
     .required()
-    .messages({ "string.empty": "Поле Телефон обязательно для заполнения" }),
+    .messages({ 'string.empty': 'Поле Телефон обязательно для заполнения' }),
   address: Joi.string()
     .required()
-    .messages({ "string.empty": "Поле Адрес обязательно для заполнения" }),
+    .messages({ 'string.empty': 'Поле Адрес обязательно для заполнения' }),
   total: Joi.number().required(),
   items: Joi.array()
     .items(Joi.string())
     .min(1)
     .required()
-    .messages({ "array.min": "Заказ должен содержать хотя бы один товар" }),
+    .messages({ 'array.min': 'Заказ должен содержать хотя бы один товар' }),
 });
 
 export const orderValidation = (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response, // eslint-disable-line
+  next: NextFunction,
 ) => {
   const { error } = orderSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
     return next(
       new BadRequestError(
-        "Ошибка валидации данных при оформлении заказа" + " " + error.message
-      )
+        `Ошибка валидации данных при оформлении заказа  ${error.message}`,
+      ),
     );
   }
 
-  next();
+  return next();
 };
 
 export const compareTotalPriceValidation = (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response, // eslint-disable-line
+  next: NextFunction,
 ) => {
-  console.log("compareTotalPriceValidation ", req.body);
   const value = req.body;
 
   const uniqueValidatedOrder = Array.from(new Set(value.items));
@@ -104,7 +104,7 @@ export const compareTotalPriceValidation = (
   }).then((products) => {
     if (products.length !== uniqueValidatedOrder.length) {
       const missingIds = value.items.filter(
-        (id: ObjectId) => !products.some((product) => product._id.equals(id))
+        (id: ObjectId) => !products.some((product) => product._id.equals(id)),
       );
       return next(new NotFoundError(`Товар(ы) ${missingIds} не найдены`));
     }
@@ -116,19 +116,19 @@ export const compareTotalPriceValidation = (
       return acc;
     }, {});
 
-    let totalSum = 0;
+    let totalSum: number = 0;
     products.forEach((product) => {
       const count = itemCounts[product._id.toString()];
       totalSum += product.price * count;
     });
 
-    if (totalSum != value.total) {
+    if (totalSum !== parseFloat(value.total)) {
       return next(
         new BadRequestError(
-          "Сумма не совпадает" + " " + totalSum + " " + value.total
-        )
+          `Сумма не совпадает ${totalSum} ${value.total}`,
+        ),
       );
     }
-    next();
+    return next();
   });
 };
