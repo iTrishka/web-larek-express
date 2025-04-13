@@ -3,11 +3,12 @@ import { errors as celebrateErrors } from "celebrate";
 import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
-import productsRouter from "../routes/product";
-import orderRouter from "../routes/order";
-import errorHandler from "../middleware/error-handler";
-import NotFoundError from "../errors/not-found-error";
-import { errorLogger, requestLogger } from "../middleware/logger";
+import productsRouter from "./routes/product";
+import orderRouter from "./routes/order";
+import errorHandler from "./middleware/error-handler";
+import NotFoundError from "./errors/not-found-error";
+import { errorLogger, requestLogger } from "./middleware/logger";
+import { config } from './config';
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-mongoose.connect("mongodb://127.0.0.1:27017/weblarek");
+mongoose.connect(config.DB_ADDRESS);
 
 app.use(requestLogger);
 
@@ -32,6 +33,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 app.use(errorHandler);
 
-app.listen(3000, () => {
-  console.log("listening on port 3000");
+app.listen(config.PORT, () => {
+  console.log(`listening on port ${config.PORT}`);
 });
