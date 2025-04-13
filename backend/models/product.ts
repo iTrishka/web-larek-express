@@ -13,7 +13,7 @@ interface IProduct {
 
 const imageSchema = new mongoose.Schema({
   fileName: { type: String },
-  originalName: { type: String }
+  originalName: { type: String },
 });
 
 const productSchema = new mongoose.Schema({

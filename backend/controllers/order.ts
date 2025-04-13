@@ -6,12 +6,12 @@ export const createOrder = (
   res: Response,
   next: NextFunction
 ) => {
-    return res.status(200).json({
-        success: true,
-        message: "Заказ успешно создан",
-        order: {
-          id: faker.string.uuid(),
-          email: req.body.total,
-        },
-    })
+  return res.status(200).json({
+    success: true,
+    message: "Заказ успешно создан",
+    order: {
+      id: faker.string.uuid(),
+      email: req.body.total,
+    },
+  });
 };
