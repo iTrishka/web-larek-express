@@ -4,7 +4,6 @@ import { ObjectId } from 'bson';
 import { Types } from 'mongoose';
 import Product from '../models/product';
 import BadRequestError from '../errors/bad-request-error';
-import NotFoundError from '../errors/not-found-error';
 
 const productSchema = Joi.object({
   title: Joi.string().min(2).max(30).required()
