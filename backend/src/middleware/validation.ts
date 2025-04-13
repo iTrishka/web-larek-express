@@ -106,7 +106,7 @@ export const compareTotalPriceValidation = (
       const missingIds = value.items.filter(
         (id: ObjectId) => !products.some((product) => product._id.equals(id)),
       );
-      return next(new NotFoundError(`Товар(ы) ${missingIds} не найдены`));
+      return next(new BadRequestError(`Товар(ы) ${missingIds} не найдены`));
     }
 
     const itemCounts = value.items.reduce((acc: any, id: string) => {
